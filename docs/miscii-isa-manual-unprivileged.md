@@ -15,13 +15,13 @@ There is no dedicated subroutine return address link register. In the standard s
 ## 2.2 Base Instruction Formats
 In the Base MII32I ISA, there are three core instruction formats (O/S/I), as shown in Base instruction formats. All are a fixed 8 bits (1 byte) in length. The ISA does not force to align.    
 ```
-7        6        5        4        3        2        1        0
+|   7   |   6   |   5   |   4   |   3   |   2   |   1   |   0   |
 
-|   0   |     1    1    |            op[4:0]            | O-type
+|   0   |   1       1   |                op[4:0]                | O-type
 
-|   0   |    op[6:5]    |            imm[4:0]           | S-type
+|   0   |    op[6:5]    |                imm[4:0]               | S-type
 
-|   1   |                  imm[6:0]                     | I-type
+|   1   |                       imm[6:0]                        | I-type
 ```
 ## 2.3 Basic Integer Computational Instructions
 All the integer computational instructions operate on WLEN bits of values held in the integer register stack. 
