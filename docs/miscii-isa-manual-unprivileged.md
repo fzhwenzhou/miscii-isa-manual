@@ -17,7 +17,7 @@ In the Base MII32I ISA, there are three core instruction formats (O/S/I), as sho
 ```
 |   7   |   6   |   5   |   4   |   3   |   2   |   1   |   0   |
 
-|   0   |   1       1   |                op[4:0]                | O-type
+|   0   |   0       0   |                op[4:0]                | O-type
 
 |   0   |    op[6:5]    |                imm[4:0]               | S-type
 
@@ -26,7 +26,7 @@ In the Base MII32I ISA, there are three core instruction formats (O/S/I), as sho
 ## 2.3 Basic Integer Computational Instructions
 All the integer computational instructions operate on WLEN bits of values held in the integer register stack. 
 ### 2.3.1 Load Integer Instruction
-There is only one instruction belonging to this category: LI (Load integer). This is also the only instruction that uses I-type. This instruction will push a sign-extended 7-bits immediate number into the stack if the previous instruction is not LI, or shift left the peak of the stack by 7 bits and add the immediate number to it. 
+There is only one instruction belonging to this category: LI (Load integer). This is also the only instruction that uses I-type. This instruction will push a sign-extended 7-bits immediate number into the stack if the previous instruction is not LI, or shift left the peak of the stack by 7 bits and add the immediate number to it. if the number of consecutive LI instructions times 7 is less than WLEN, then the value pushed will be zero-extended.
 ### 2.3.2 Basic Integer Arithmetic Instruction
 
 ## 2.4 Control Transfer Instructions
