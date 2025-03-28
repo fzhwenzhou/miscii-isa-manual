@@ -1,8 +1,12 @@
 #include "ac_int.h"
 
+
+
 // Define WLEN, by default 32 bit
 #define WLEN 32
 
+
+// Basic integer instruction set
 // Define Opcodes
 #define S_LSP 0b01
 #define S_SSP 0b10
@@ -54,13 +58,62 @@
 #define O_SCALL 0b11110
 #define O_BREAK 0b11111
 
+// Second level instruction
+#define OPR_FENCE 0b0000000
+#define OPR_GPC   0b0000001
+#define OPR_PPC   0b0000010
+#define OPR_GSP   0b0000011
+#define OPR_PSP   0b0000100
+
+// Multiplication extension
+#ifdef MII_MUL
+#define OPR_MUL 0b0000101
+#define OPR_MULH 0b0000110
+#define OPR_MULHU 0b0000111
+#endif
+
+#ifdef MII_DIV
+#define OPR_DIV 0b0001000
+#define OPR_DIVU 0b0001001
+#define OPR_MOD 0b0001010
+#define OPR_MODU 0b0001011
+#endif
+
+#ifdef MII_ATOMIC
+
+#endif
+
+#ifdef MII_FLOAT
+
+#endif
+
+#ifdef MII_DOUBLE
+
+#endif
+
+
+// Vector table definition for error handling
+#define EXCPT_ILLEGAL_INSTRUCTION 0
+#define EXCPT_NO_SUFFICIENT_ELEMENT 1
+#define EXCPT_OPR_NO_IMM 2
+
+void exception(uint8 exception_number) {
+
+}
+
 
 void mii_core(char* mem) {
+    /* PLACEHOLDER FOR PRAGMA TO ATTACH MEM TO AXI INTERFACE */
+
     ac_int<WLEN, false> register_stack[8]{};
     uint4 register_ptr{};
+    ac_int<WLEN, false> imm_register{};
 
-    ac_int<WLEN, false> pc{}; // Starting address should be 0x00000000
+    ac_int<WLEN, false> pc{0x8000000}; // Starting address
+    ac_int<WLEN, false> csr_excpt{}; // The default exception handler table base address
     uint1 csr_imm{};
+    
+    
     while (true) {
         // Fetch
         uint8 instr = mem[pc];
@@ -77,28 +130,35 @@ void mii_core(char* mem) {
         // Execute
         if (bit7) { // is LI instruction
             if (csr_imm) {
-                register_stack[register_ptr - 1] <<= 7;
-                register_stack[register_ptr - 1] |= imm_i;
+                imm_register <<= 7;
+                imm_register |= imm_i;
             }
             else {
                 csr_imm = 1;
-                if (register_ptr == 8) {
-                    /* PLACEHOLDER FOR PRAGMA TO UNROLL LOOP */
-                    for (uint3 i = 0; i < 7; i++) {
-                        register_stack[i] = register_stack[i + 1];
-                    }
-                }
-                else {
-                    register_ptr++;
-                }
-                register_stack[register_ptr - 1] = imm_i;
+                imm_register = imm_i;
             }
         }
-        else if (op_s != 0) { // Load & Store instruction
-            
-        }
         else { // Other instruction
-
+            if (op_s == 0 && op_o == O_OPR) {
+                if (!csr_imm) {
+                    exception(EXCPT_OPR_NO_IMM);
+                }
+            }
+            else {
+                if (csr_imm) {
+                    if (register_ptr == 8) { // The stack is full, discard the last one
+                        /* PLACEHOLDER FOR PRAGMA TO UNROLL LOOP */
+                        for (int i = 0; i < 7; i++) {
+                            register_stack[i] = register_stack[i + 1];
+                        }
+                        register_stack[register_ptr - 1] = imm_register;
+                    }
+                    else {
+                        register_stack[register_ptr++] = imm_register;
+                    }
+                    csr_imm = 0;
+                }
+            }
         }
     }
 }
